@@ -6,18 +6,17 @@ import java.util.ArrayList;
 import java.util.List;
 
 class DatabaseController {
-    private static final String url = "jdbc:mysql://localhost:3306/lab4";
+    private static final String url = "jdbc:mysql://localhost:3306/students";
     private static final String username = "root";
     private static final String password = "root";
-    public void insertNote(String importance, String text) {
-        String sql = "INSERT INTO notes (importance, text, timestamp) VALUES (?, ?, ?)";
-        Timestamp timestamp = Timestamp.valueOf(LocalDateTime.now());
+    public void insertStudent(String name, String surname, Integer age, Integer index_number) {
+        String sql = "INSERT INTO student (name, surname, age, index_number) VALUES (?, ?, ?, ?)";
         try (Connection conn = DriverManager.getConnection(url, username, password);
              PreparedStatement stmt = conn.prepareStatement(sql)) {
-            stmt.setString(1, importance);
-            stmt.setString(2, text);
-            stmt.setTimestamp(3, timestamp);
-
+            stmt.setString(1, name);
+            stmt.setString(2, surname);
+            stmt.setInt(3, age);
+            stmt.setInt(4, index_number);
             int rowsInserted = stmt.executeUpdate();
 
             if (rowsInserted > 0) {
@@ -29,13 +28,14 @@ class DatabaseController {
             e.printStackTrace();
         }
     }
-    public class Note {
+    public class Student {
         private int id;
-        private String importance;
-        private String text;
-        private String timestamp;
+        private String name;
+        private String surname;
+        private Integer age;
+        private Integer index_number;
 
-        public Note() {}
+        public Student() {}
 
         public int getId() {
             return id;
@@ -45,69 +45,100 @@ class DatabaseController {
             this.id = id;
         }
 
-        public String getImportance() {
-            return importance;
+        public String getName() {
+            return name;
         }
 
-        public void setImportance(String importance) {
-            this.importance = importance;
+        public void setName(String name) {
+            this.name = name;
         }
 
-        public String getText() {
-            return text;
+        public String getSurname() {
+            return surname;
         }
 
-        public void setText(String text) {
-            this.text = text;
+        public void setSurname(String surname) {
+            this.surname = surname;
         }
 
-        public String getTimestamp() {
-            return timestamp;
+        public Integer getAge() {
+            return age;
         }
 
-        public void setTimestamp(String timestamp) {
-            this.timestamp = timestamp;
+        public void setAge(Integer age) {
+            this.age = age;
         }
-
+        public Integer getIndex_number(){
+            return index_number;
+        }
+        public void setIndex_number(Integer index_number) {
+            this.index_number = index_number;
+        }
         @Override
         public String toString() {
-            return "Note{" +
+            return "Student{" +
                     "id=" + id +
-                    ", importance='" + importance + '\'' +
-                    ", text='" + text + '\'' +
-                    ", timestamp='" + timestamp + '\'' +
+                    ", name='" + name + '\'' +
+                    ", surname='" + surname + '\'' +
+                    ", age='" + age + '\'' +
+                    ", index_number='" + index_number + '\'' +
                     '}';
         }
     }
 
-    public List<Note> getAllNotes() {
-        List<Note> notes = new ArrayList<>();
+    public List<Student> getAllStudents() {
+        List<Student> students = new ArrayList<>();
 
-        String sql = "SELECT id, importance, text, timestamp FROM notes";
+        String sql = "SELECT student_id, name, surname FROM student";
 
         try (Connection conn = DriverManager.getConnection(url, username, password);
              Statement stmt = conn.createStatement();
              ResultSet rs = stmt.executeQuery(sql)) {
-
             while (rs.next()) {
-                int id = rs.getInt("id");
-                String importance = rs.getString("importance");
-                String text = rs.getString("text");
-                String timestamp = rs.getString("timestamp");
+                int id = rs.getInt("student_id");
+                String name = rs.getString("name");
+                String surname = rs.getString("surname");
 
-                Note note = new Note();
-                note.setId(id);
-                note.setText(text);
-                note.setImportance(importance);
-                note.setTimestamp(timestamp);
-                notes.add(note);
+                Student student = new Student();
+                student.setId(id);
+                student.setName(name);
+                student.setSurname(surname);
+                students.add(student);
             }
         } catch (SQLException e) {
             e.printStackTrace();
         }
 
-        return notes;
+        return students;
     }
+    public Student getSingleStudent(Integer studentId) {
+        String sql = "SELECT * FROM student WHERE student_id = ?";
+        Student student = null;
+        try (Connection conn = DriverManager.getConnection(url, username, password);
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
 
+            stmt.setInt(1, studentId);
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    int id = rs.getInt("student_id");
+                    String name = rs.getString("name");
+                    String surname = rs.getString("surname");
+                    Integer age = rs.getInt("age");
+                    Integer index_number = rs.getInt("index_number");
+                    student = new Student();
+                    student.setId(id);
+                    student.setName(name);
+                    student.setSurname(surname);
+                    student.setAge(age);
+                    student.setIndex_number(index_number);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return student;
+    }
 }
 
